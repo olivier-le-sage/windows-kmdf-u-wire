@@ -1,12 +1,13 @@
 ## Windows Driver for micro-wire ##
 
-A standard windows driver which, once installed, can recognize a device running the
-u-wire firmware as well as exchange setups packets.
-
-u-wire is a minimal (but spec-compliant!) USB firmware for the AVR atTiny10 microcontroller.
-It uses incredibly clever assembly code to provide support for the mandatory transactions required 
+u-wire [by cpldcpu](https://github.com/cpldcpu/u-wire) is a minimal 
+(but spec-compliant!) USB firmware for the AVR atTiny10 microcontroller.
+Using incredibly clever assembly code, it provides support for the mandatory transactions required 
 for usb using only 1kB of program memory and 32 bytes of RAM.
 It can be used to build simple USB devices such a controllable RGB LED.
+
+The standard windows driver provided here can be used to recognize 
+and communicate with a device running cpldcpu's firmware.
 
 ### Requirements ###
 
