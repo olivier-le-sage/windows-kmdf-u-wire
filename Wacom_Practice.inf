@@ -1,0 +1,87 @@
+;
+; Wacom_Practice.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=USBDevice
+ClassGuid={88BAE032-5A81-49f0-BC3D-A4FF138216D6}
+Provider=%ManufacturerName%
+CatalogFile=Wacom_Practice.cat
+DriverVer=
+
+[DestinationDirs]
+DefaultDestDir = 12
+Wacom_Practice_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+Wacom_Practice.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%Wacom_Practice.DeviceDesc%=Wacom_Practice_Device, USB\VID_1781&PID_0c9f
+
+[Wacom_Practice_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+Wacom_Practice.sys
+
+[Wacom_Practice_Device.NT.HW]
+AddReg=Wacom_Practice_AddReg
+
+[Wacom_Practice_AddReg]
+; By default, USBDevice class uses iProduct descriptor to name the device in
+; Device Manager on Windows 8 and higher.
+; Uncomment for this device to use %DeviceName% on Windows 8 and higher:
+;HKR,,FriendlyName,,%Wacom_Practice.DeviceDesc%
+
+;-------------- Service installation
+[Wacom_Practice_Device.NT.Services]
+AddService = Wacom_Practice,%SPSVCINST_ASSOCSERVICE%, Wacom_Practice_Service_Inst
+
+; -------------- Wacom_Practice driver install sections
+[Wacom_Practice_Service_Inst]
+DisplayName    = %Wacom_Practice.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\Wacom_Practice.sys
+
+;
+;--- Wacom_Practice_Device Coinstaller installation ------
+;
+
+[Wacom_Practice_Device.NT.CoInstallers]
+AddReg=Wacom_Practice_Device_CoInstaller_AddReg
+CopyFiles=Wacom_Practice_Device_CoInstaller_CopyFiles
+
+[Wacom_Practice_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[Wacom_Practice_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[Wacom_Practice_Device.NT.Wdf]
+KmdfService =  Wacom_Practice, Wacom_Practice_wdfsect
+[Wacom_Practice_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Lesage Inc." ;TODO: Replace with your manufacturer name
+ClassName="Universal Serial Bus devices"
+DiskName = "Wacom_Practice Installation Disk"
+Wacom_Practice.DeviceDesc = "Wacom_Practice Device"
+Wacom_Practice.SVCDESC = "Wacom_Practice Service"
+REG_MULTI_SZ = 0x00010000
