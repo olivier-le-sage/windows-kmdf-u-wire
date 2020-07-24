@@ -19,9 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Inf Include="Wacom_Practice.inf">
       <Filter>Driver Files</Filter>
     </Inf>
@@ -59,5 +56,8 @@
     <ClCompile Include="HSVtoRGB.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="debug_key.txt" />
   </ItemGroup>
 </Project>

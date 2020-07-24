@@ -15,9 +15,10 @@ and communicate with a device running cpldcpu's firmware.
 - Visual Studio with the Windows SDK and C++ tools
 - Spectre-mitigated libraries for your target environment (selected in Visual Studio installation)
 
+<!--
 ### Hardware Schematic ###
 
-TBD
+TBD-->
 
 ### Implementation ###
 
@@ -25,6 +26,7 @@ A prototype circuit built with a stripped-down usb cable:
 
 ![Circuit Prototype](assets/usb_hw_impl.jpg?raw=true "")
 
+<!--
 ### Proof ###
 
-TBD
+TBD-->

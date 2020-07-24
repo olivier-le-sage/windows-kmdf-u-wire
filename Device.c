@@ -26,8 +26,9 @@ Environment:
 const __declspec(selectany) LONGLONG DEFAULT_CONTROL_TRANSFER_TIMEOUT = 5 * -1 * WDF_TIMEOUT_TO_SEC;
 
 // vendor commands for changing the RGB LED color 
-#define UWIRE_GET_FIRMWARE 0x22 // bRequest used to retrieve firmware version
-#define UWIRE_WRITE_LED 0x66    // bRequest used to write to the RGB LED
+#define UWIRE_GET_FIRMWARE 0x22  // bRequest used to retrieve firmware version
+#define UWIRE_LED 0x36           // bRequest used to write/flush/preload the RGB LED
+#define UWIRE_CHANGE_SERIAL 0x37 // bRequest used to change the device serial number
 
 // misc defines required to talk to the firmware properly
 #define UWIRE_FIRMWARE_VERSION 0b00010010 // expected: ver 1.2
@@ -131,12 +132,15 @@ VOID GetFirmwareVersion(
     WDF_REQUEST_SEND_OPTIONS sendOptions;
     USHORT firmwareVersion = 0; // expressed as ver X.Y where X is the 4 MSB and Y is the 4 LSB
 
+    PAGED_CODE();
+
     WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)firmwareVersion, sizeof(firmwareVersion));
 
+    WDF_REQUEST_SEND_OPTIONS_INIT(&sendOptions, WDF_REQUEST_SEND_OPTION_TIMEOUT);
     WDF_REQUEST_SEND_OPTIONS_SET_TIMEOUT(&sendOptions, DEFAULT_CONTROL_TRANSFER_TIMEOUT);
 
     // create packet configured to be from host to device using the right vendor command
-    WDF_USB_CONTROL_SETUP_PACKET_INIT_CLASS(&controlSetupPacket, BmRequestDeviceToHost, BmRequestToDevice, UWIRE_GET_FIRMWARE, 0, 0);
+    WDF_USB_CONTROL_SETUP_PACKET_INIT_VENDOR(&controlSetupPacket, BmRequestDeviceToHost, BmRequestToDevice, UWIRE_GET_FIRMWARE, 0, 0);
 
     // and send it
     status = WdfUsbTargetDeviceSendControlTransferSynchronously(DeviceContext->UsbDevice,
@@ -187,8 +191,11 @@ VOID SetLEDColor(
     WDF_REQUEST_SEND_OPTIONS sendOptions;
     ULONG buffer = 0;
 
+    PAGED_CODE();
+
     WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)buffer, sizeof(buffer));
 
+    WDF_REQUEST_SEND_OPTIONS_INIT(&sendOptions, WDF_REQUEST_SEND_OPTION_TIMEOUT);
     WDF_REQUEST_SEND_OPTIONS_SET_TIMEOUT(&sendOptions, DEFAULT_CONTROL_TRANSFER_TIMEOUT);
 
     //
@@ -198,7 +205,7 @@ VOID SetLEDColor(
 
     USHORT wValue = (USHORT)((g << 8) | PIN | 0x30); // The wValue and wIndex fields are used to transfer the
     USHORT wIndex = (USHORT)((b << 8) | r);          // data telling the MCU which color to send to the LED's internal controller
-    WDF_USB_CONTROL_SETUP_PACKET_INIT_VENDOR(&controlSetupPacket, BmRequestHostToDevice, BmRequestToDevice, UWIRE_WRITE_LED, wValue, wIndex);
+    WDF_USB_CONTROL_SETUP_PACKET_INIT_VENDOR(&controlSetupPacket, BmRequestHostToDevice, BmRequestToDevice, UWIRE_LED, wValue, wIndex);
 
     status = WdfUsbTargetDeviceSendControlTransferSynchronously(DeviceContext->UsbDevice,
         WDF_NO_HANDLE,
@@ -233,8 +240,6 @@ VOID CycleLEDColor(
     int r;
     int g;
     int b;
-
-    DeviceContext;
 
     // cycling through v values from 0 to 100% then back to 0, three times
     for (int i = 0; i < 3; i++) {
