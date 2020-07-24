@@ -134,7 +134,7 @@ VOID GetFirmwareVersion(
 
     PAGED_CODE();
 
-    WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)firmwareVersion, sizeof(firmwareVersion));
+    WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)&firmwareVersion, sizeof(firmwareVersion));
 
     WDF_REQUEST_SEND_OPTIONS_INIT(&sendOptions, WDF_REQUEST_SEND_OPTION_TIMEOUT);
     WDF_REQUEST_SEND_OPTIONS_SET_TIMEOUT(&sendOptions, DEFAULT_CONTROL_TRANSFER_TIMEOUT);
@@ -193,7 +193,7 @@ VOID SetLEDColor(
 
     PAGED_CODE();
 
-    WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)buffer, sizeof(buffer));
+    WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)&buffer, sizeof(buffer));
 
     WDF_REQUEST_SEND_OPTIONS_INIT(&sendOptions, WDF_REQUEST_SEND_OPTION_TIMEOUT);
     WDF_REQUEST_SEND_OPTIONS_SET_TIMEOUT(&sendOptions, DEFAULT_CONTROL_TRANSFER_TIMEOUT);
