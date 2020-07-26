@@ -15,6 +15,7 @@ Environment:
 --*/
 
 #include "driver.h"
+#include "wdftimer.h"
 #include "device.tmh"
 #include "HSVtoRGB.h"
 
@@ -26,13 +27,13 @@ Environment:
 const __declspec(selectany) LONGLONG DEFAULT_CONTROL_TRANSFER_TIMEOUT = 5 * -1 * WDF_TIMEOUT_TO_SEC;
 
 // vendor commands for changing the RGB LED color 
-#define UWIRE_GET_FIRMWARE 0x22  // bRequest used to retrieve firmware version
-#define UWIRE_LED 0x36           // bRequest used to write/flush/preload the RGB LED
+#define UWIRE_GET_FIRMWARE  0x22 // bRequest used to retrieve firmware version
+#define UWIRE_LED           0x36 // bRequest used to write/flush/preload the RGB LED
 #define UWIRE_CHANGE_SERIAL 0x37 // bRequest used to change the device serial number
 
 // misc defines required to talk to the firmware properly
 #define UWIRE_FIRMWARE_VERSION 0b00010010 // expected: ver 1.2
-#define PIN 0x1 // LED is connected the the AtTiny10's PIN1 -- this has to be specified to the firmware
+#define PIN 0x1 // LED is connected the the ATtiny10's PIN1 -- this has to be specified to the firmware
 
 // HSV-space colors for demo (v is irrelevant as it will be cycled)
 #define green_h 113
@@ -41,6 +42,12 @@ const __declspec(selectany) LONGLONG DEFAULT_CONTROL_TRANSFER_TIMEOUT = 5 * -1 *
 #define blue_s 67
 #define orange_h 33
 #define orange_s 59
+
+// state variable for the blink routine
+typedef enum { ON, OFF } LedBlink;
+LedBlink ledBlinkState = OFF;
+BOOLEAN ledChanged = FALSE;
+int secondsRemaining = 0;
 
 NTSTATUS
 WacomPracticeCreateDevice(
@@ -222,6 +229,7 @@ VOID SetLEDColor(
     else {
         KdPrint(("Device %d: Successfully set LED to RGB = (%d,%d,%d)\n", DeviceContext->DeviceNumber, r, g, b));
     }
+    KdPrint(("Buffer val = 0x%x", buffer));
 
     return;
 }
@@ -262,6 +270,92 @@ VOID CycleLEDColor(
     return;
 }
 
+_Use_decl_annotations_
+VOID BlinkLEDColorCallback(
+    __in WDFTIMER timer
+)
+/* The callback to the timer used to blink the LED */
+{
+    WDFOBJECT timerObject = WdfTimerGetParentObject(timer);
+    UNREFERENCED_PARAMETER(timerObject);
+
+    switch (ledBlinkState) {
+    case(ON):
+        ledBlinkState = OFF;
+        break;
+    case(OFF):
+        ledBlinkState = ON;
+        break;
+    }
+    secondsRemaining -= 1;
+    ledChanged = TRUE;
+}
+
+VOID BlinkLEDColor(
+    __in PDEVICE_CONTEXT DeviceContext,
+    __in int duration,
+    __in int r,
+    __in int g,
+    __in int b
+)
+/* Blinks the color selected on the LED
+ * - Set duration to -1 to blink indefinitely; otherwise duration is the number of seconds to blink for
+ */
+{
+    NTSTATUS status;
+    WDFTIMER timer;
+    WDFOBJECT timerObject;
+    WDF_TIMER_CONFIG timerConfig;
+    WDF_OBJECT_ATTRIBUTES timerAttrib;
+
+    //
+    //  Set up a WDF timer for color change every second
+    //
+    WDF_TIMER_CONFIG_INIT(&timerConfig, BlinkLEDColorCallback);
+    timerConfig.Period = 1000; // 1s
+    timerConfig.TolerableDelay = 50; // +/- 5% error range
+    timerConfig.AutomaticSerialization = TRUE;
+    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttrib);
+    status = WdfTimerCreate(&timerConfig, &timerAttrib, &timer);
+
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("Failed to setup timer for LED blink routine. status = 0x%x", status));
+        return;
+    }
+    else KdPrint(("Successfully set up timer for LED blink routine."));
+
+    // get the timer's parent object
+    timerObject = WdfTimerGetParentObject(timer);
+
+    //
+    // Start the timer
+    //
+    secondsRemaining = duration;
+    WdfTimerStart(timer, 0); // due time of 0 --> start immediately
+
+    //
+    // Determine when or whether to stop the timer
+    // 
+    while (TRUE) {
+        if (ledChanged) {
+            if (duration == -1) {
+                if (ledBlinkState == ON) SetLEDColor(DeviceContext, r, g, b);
+                else SetLEDColor(DeviceContext, 0, 0, 0);
+            }
+            else if (secondsRemaining) {
+                SetLEDColor(DeviceContext, r, g, b);
+            }
+            else {
+                SetLEDColor(DeviceContext, 0, 0, 0);
+                ledBlinkState = OFF;
+                ledChanged = FALSE;
+                WdfTimerStop(timer, TRUE); // stop and wait for queued DCPs to execute
+                break; // exit while loop and return from function
+            }
+            ledChanged = FALSE;
+        }
+    }
+}
 
 NTSTATUS
 WacomPracticeEvtDevicePrepareHardware(
@@ -355,7 +449,9 @@ Return Value:
 
     // on startup, retrieve the firmware version and turn on the LED
     GetFirmwareVersion(pDeviceContext);
-    SetLEDColor(pDeviceContext, 243, 236, 119); // a brightish yellow
+    // SetLEDColor(pDeviceContext, 243, 236, 119); // a brightish yellow
+    CycleLEDColor(pDeviceContext, 55, 35); // H=55 degrees, S=35% <=> a light yellow
+    //BlinkLEDColor(pDeviceContext, 6, 100, 100, 100); // blink with standard white light for 6 seconds
 
     if (!NT_SUCCESS(status)) {
         TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE,

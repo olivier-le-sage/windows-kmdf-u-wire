@@ -61,4 +61,9 @@ WacomPracticeCreateDevice(
 //
 EVT_WDF_DEVICE_PREPARE_HARDWARE WacomPracticeEvtDevicePrepareHardware;
 
+// 
+// Callback function called when a specific time period has elapsed.
+//
+EVT_WDF_TIMER BlinkLEDColorCallback;
+
 EXTERN_C_END

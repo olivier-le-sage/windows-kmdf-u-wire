@@ -119,6 +119,12 @@ Return Value:
                 "%!FUNC! Queue 0x%p, Request 0x%p OutputBufferLength %d InputBufferLength %d IoControlCode %d", 
                 Queue, Request, (int) OutputBufferLength, (int) InputBufferLength, IoControlCode);
 
+    KdPrint(("WacomPracticeEvtIoDeviceControl entered."));
+
+    if (IoControlCode == IOCTL_UWIRE_SETLED) {
+        KdPrint(("Received Control Code %d with Request = 0x%p", IoControlCode, Request));
+    }
+
     WdfRequestComplete(Request, STATUS_SUCCESS);
 
     return;

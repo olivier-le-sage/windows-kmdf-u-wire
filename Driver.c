@@ -32,6 +32,51 @@ typedef struct _SAMPLE_DEVICE_EXTENSION
 #pragma alloc_text (PAGE, WacomPracticeEvtDriverContextCleanup)
 #endif
 
+UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\WacomPracticeDevice");
+UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\WacomPracticeDeviceLink");
+
+NTSTATUS MajorFunctions
+(
+    PDEVICE_OBJECT DeviceObject,
+    PIRP Irp
+)
+{
+    UNREFERENCED_PARAMETER(DeviceObject);
+    // get the stack location of the current I/O request packet
+    PIO_STACK_LOCATION stackLocation = NULL;
+    stackLocation = IoGetCurrentIrpStackLocation(Irp);
+
+    switch (stackLocation->MajorFunction)
+    {
+    case IRP_MJ_CREATE:
+        KdPrint(("Handle to symbolic link %wZ opened", DEVICE_SYMBOLIC_NAME));
+        break;
+    case IRP_MJ_CLOSE:
+        KdPrint(("Handle to symbolic link %wZ clsoed", DEVICE_SYMBOLIC_NAME));
+        break;
+    default:
+        break;
+    }
+
+    Irp->IoStatus.Information = 0;
+    Irp->IoStatus.Status = STATUS_SUCCESS;
+    IoCompleteRequest(Irp, IO_NO_INCREMENT);
+
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS HandleCustomIOCTL
+(
+    PDEVICE_OBJECT DeviceObject,
+    PIRP Irp
+)
+{
+    UNREFERENCED_PARAMETER(DeviceObject);
+    UNREFERENCED_PARAMETER(Irp);
+    //PIO_STACK_LOCATION stackLocation = NULL;
+    return STATUS_SUCCESS;
+}
+
 NTSTATUS DriverEntry(
     _In_ PDRIVER_OBJECT  DriverObject,
     _In_ PUNICODE_STRING RegistryPath
@@ -63,17 +108,34 @@ Return Value:
 --*/
 {
     WDF_DRIVER_CONFIG config;
-    NTSTATUS status;
+    NTSTATUS status = 0;
     WDF_OBJECT_ATTRIBUTES attributes;
 
     KdPrint(("DEBUG: Driver was entered.\n"));
-
     //
     // Initialize WPP Tracing
     //
-    WPP_INIT_TRACING( DriverObject, RegistryPath );
+    WPP_INIT_TRACING(DriverObject, RegistryPath);
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "%!FUNC! Entry");
+
+    // set up routine for driver unloading
+    //DriverObject->DriverUnload = DriverUnload;
+
+    // set up routine for handling IO requests from applications
+    //DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = HandleCustomIOCTL;
+
+    // set up routines that will execute once the device's symbolic link is opened/closed
+    DriverObject->MajorFunction[IRP_MJ_CREATE] = MajorFunctions;
+    DriverObject->MajorFunction[IRP_MJ_CLOSE] = MajorFunctions;
+
+    status = IoCreateDevice(DriverObject, 0, &DEVICE_NAME, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE, &DriverObject->DeviceObject);
+    if (!NT_SUCCESS(status)) KdPrint(("Could not create device %wZ", DEVICE_NAME));
+    else KdPrint(("Device %wZ created", DEVICE_NAME));
+
+    status = IoCreateSymbolicLink(&DEVICE_SYMBOLIC_NAME, &DEVICE_NAME);
+    if (!NT_SUCCESS(status)) KdPrint(("Error creating symbolic link %wZ", DEVICE_SYMBOLIC_NAME));
+    else KdPrint(("Symbolic link %wZ created", DEVICE_SYMBOLIC_NAME));
 
     //
     // Register a cleanup callback so that we can call WPP_CLEANUP when
