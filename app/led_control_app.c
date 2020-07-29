@@ -47,14 +47,23 @@ static const CHAR* find_device() {
         printf("SetupDiGetClassDevs() failed. Error: %ld", GetLastError());
         return NULL;
     }
-    SetupDiEnumDeviceInterfaces(hDevInfo, NULL, &GUID_DEVINTERFACE_WacomPractice, dwMemberIdx, &DevIntfData);
+    if (!SetupDiEnumDeviceInterfaces(hDevInfo, NULL, &GUID_DEVINTERFACE_WacomPractice, dwMemberIdx, &DevIntfData)) {
+        printf("SetupDiEnumDeviceInterfaces() failed. Error: %ld", GetLastError());
+        return NULL;
+    }
     // get the required buffer size and store it in dwSize using a NULL call
     DevIntfData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-    SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, NULL, 0, &dwSize, NULL);
+    if (!SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, NULL, 0, &dwSize, NULL)) {
+        printf("SetupDiGetDeviceInterfaceDetail() failed while getting the required buffer size. Error: %ld", GetLastError());
+        return NULL;
+    }
     DevIntfDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(dwSize);
     DevIntfDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
     // now perform the real call
-    SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, DevIntfDetailData, dwSize, &dwSize, &DevData);
+    if (!SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, DevIntfDetailData, dwSize, &dwSize, &DevData)) {
+        printf("SetupDiGetDeviceInterfaceDetail() failed while populating DevIntfDetailData. Error: %ld", GetLastError());
+        return NULL;
+    }
 
     device_path = DevIntfDetailData->DevicePath;
     return device_path;
