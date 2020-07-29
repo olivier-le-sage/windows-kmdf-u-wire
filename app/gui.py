@@ -4,6 +4,7 @@
 from ctypes import *
 import ctypes.util
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
 from PyQt5.QtWidgets import QColorDialog, QHBoxLayout, QDesktopWidget, QMessageBox
 from PyQt5.QtGui  import QIcon, QPainter, QColor, QPen
@@ -90,7 +91,7 @@ class UWireColorPicker(QWidget):
 if __name__ == '__main__':
 
     # Load shared object library containing C object code
-    led_control_lib = CDLL("led_control_app.dll")
+    led_control_lib = CDLL(os.path.abspath("led_control_app.dll"))
     if led_control_lib.uwire_set_led_color == None:
         print("ERROR: Failed to load led_control_app code. Exiting.")
         exit()
