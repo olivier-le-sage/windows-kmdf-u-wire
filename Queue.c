@@ -169,6 +169,9 @@ Return Value:
         RGBtoHSV(&h, &s, &v, (*rgb & 0xFF0000) >> 16, (*rgb & 0x00FF00) >> 8, *rgb & 0x0000FF);
         CycleLEDColor(pDeviceContext, h, s);
         break;
+    default:
+        KdPrint(("WARNING: IOCTL code not supported!"));
+        break;
     }
 
     WdfRequestComplete(Request, STATUS_SUCCESS);

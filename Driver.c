@@ -121,24 +121,6 @@ Return Value:
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "%!FUNC! Entry");
 
-    // set up routine for driver unloading
-    //DriverObject->DriverUnload = DriverUnload;
-
-    // set up routine for handling IO requests from applications
-    //DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = HandleCustomIOCTL;
-
-    // set up routines that will execute once the device's symbolic link is opened/closed
-    //DriverObject->MajorFunction[IRP_MJ_CREATE] = MajorFunctions;
-    //DriverObject->MajorFunction[IRP_MJ_CLOSE] = MajorFunctions;
-
-    status = IoCreateDevice(DriverObject, 0, &DEVICE_NAME, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE, &DriverObject->DeviceObject);
-    if (!NT_SUCCESS(status)) KdPrint(("Could not create device %wZ", DEVICE_NAME));
-    else KdPrint(("Device %wZ created", DEVICE_NAME));
-
-    status = IoCreateSymbolicLink(&DEVICE_SYMBOLIC_NAME, &DEVICE_NAME);
-    if (!NT_SUCCESS(status)) KdPrint(("Error creating symbolic link %wZ", DEVICE_SYMBOLIC_NAME));
-    else KdPrint(("Symbolic link %wZ created", DEVICE_SYMBOLIC_NAME));
-
     //
     // Register a cleanup callback so that we can call WPP_CLEANUP when
     // the framework driver object is deleted during driver unload.

@@ -9,6 +9,8 @@
 
 #include "led_control_app.h"
 
+#define DEVICE_GUID L"\\\\.\\{cfab8b22-3ad1-4edf-8626-d2c7e292e04d}"
+
 typedef struct RGB_data {
     unsigned char r;
     unsigned char g;
@@ -38,7 +40,7 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     //for(unsigned int i = 0; i < sizeof(inBuffer); i++)
     //    printf("%02X ", (unsigned char) inBuffer[i]);
     //printf("\n");
-    device = CreateFileW(L"\\\\.\\WacomPracticeDeviceLink",
+    device = CreateFileW(DEVICE_GUID,
                          GENERIC_ALL,
                          0,
                          0,
@@ -48,8 +50,8 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
 
     if (device == INVALID_HANDLE_VALUE) {
         long unsigned int errorCode = GetLastError();
-        if (errorCode == ERROR_ACCESS_DENIED) printf("> Device found but access was denied! Try running as admin.");
-        printf("> Could not open device: 0x%lx\n", errorCode);
+        if (errorCode == ERROR_ACCESS_DENIED) printf("> Device found but access was denied! Try running as admin.\n");
+        printf("> Could not open device. Error Code = 0x%lx\n", errorCode);
         return FALSE;
     }
 
