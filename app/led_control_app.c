@@ -26,15 +26,15 @@ typedef struct RGB_data {
 #define IOCTL_UWIRE_BLINKLED CTL_CODE(FILE_DEVICE_UNKNOWN, 0x204a, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_UWIRE_FADELED CTL_CODE(FILE_DEVICE_UNKNOWN, 0x204b, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-static CHAR* find_device(void) {
-    //CHAR* device_path;
+static const CHAR* find_device() {
+    static CHAR* device_path;
     DWORD dwSize;
     DWORD dwMemberIdx = 0;
     SP_DEVICE_INTERFACE_DATA DevIntfData;
     PSP_DEVICE_INTERFACE_DETAIL_DATA DevIntfDetailData;
     SP_DEVINFO_DATA DevData;
 
-    //device_path = (CHAR*)malloc(128);// allocate return string to the heap so that it won't be cleared
+    device_path = (CHAR*)malloc(256);
     //
     // Find the USB device path
     //
@@ -56,7 +56,8 @@ static CHAR* find_device(void) {
     // now perform the real call
     SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, DevIntfDetailData, dwSize, &dwSize, &DevData);
 
-    return DevIntfDetailData->DevicePath; // the device path
+    device_path = DevIntfDetailData->DevicePath;
+    return device_path;
 }
 
 BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
@@ -65,7 +66,7 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     DWORD bytesReturned = 0;
     CHAR inBuffer[16] = {0};  // was [128]
     CHAR outBuffer[16] = {0}; // was [128]
-    CHAR* device_path;
+    const CHAR* device_path;
 
     // find the device
     device_path = find_device();
@@ -73,7 +74,7 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
         printf("Failed to elaborate device path string.\n");
         return FALSE;
     } else {
-        printf("Found device path string: %s\n", device_path);
+        printf("Found device path string: [%s]\n", device_path);
     }
 
     // send the data in as a 24-bit lump of data -- the driver will know how to deal with it
@@ -122,7 +123,7 @@ BOOL uwire_blink_led(int duration) {
     DWORD bytesReturned = 0;
     CHAR inBuffer[128] = {0};
     CHAR outBuffer[128] = {0};
-    CHAR* device_path;
+    const CHAR* device_path;
 
     // find the device
     device_path = find_device();
