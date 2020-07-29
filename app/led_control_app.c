@@ -17,6 +17,7 @@ typedef struct RGB_data {
 
 #define IOCTL_UWIRE_SETLED CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2049, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_UWIRE_BLINKLED CTL_CODE(FILE_DEVICE_UNKNOWN, 0x204a, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_UWIRE_FADELED CTL_CODE(FILE_DEVICE_UNKNOWN, 0x204b, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     // open the USB device
@@ -37,7 +38,7 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     for(unsigned int i = 0; i < sizeof(inBuffer); i++)
         printf("%02X ", (unsigned char) inBuffer[i]);
     printf("\n");
-    device = CreateFileW(L"\\\\.\\WacomPracticeDeviceLink",
+    device = CreateFileW(L"\\\\.\\Wacom_Practice_Device",
                          GENERIC_ALL,
                          0,
                          0,

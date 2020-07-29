@@ -35,6 +35,7 @@ typedef struct _SAMPLE_DEVICE_EXTENSION
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\WacomPracticeDevice");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\WacomPracticeDeviceLink");
 
+/*
 NTSTATUS MajorFunctions
 (
     PDEVICE_OBJECT DeviceObject,
@@ -76,6 +77,7 @@ NTSTATUS HandleCustomIOCTL
     //PIO_STACK_LOCATION stackLocation = NULL;
     return STATUS_SUCCESS;
 }
+*/
 
 NTSTATUS DriverEntry(
     _In_ PDRIVER_OBJECT  DriverObject,
@@ -111,7 +113,7 @@ Return Value:
     NTSTATUS status = 0;
     WDF_OBJECT_ATTRIBUTES attributes;
 
-    KdPrint(("DEBUG: Driver was entered.\n"));
+    KdPrint(("DEBUG: Driver was entered. Build ver 1.\n"));
     //
     // Initialize WPP Tracing
     //
@@ -126,8 +128,8 @@ Return Value:
     //DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = HandleCustomIOCTL;
 
     // set up routines that will execute once the device's symbolic link is opened/closed
-    DriverObject->MajorFunction[IRP_MJ_CREATE] = MajorFunctions;
-    DriverObject->MajorFunction[IRP_MJ_CLOSE] = MajorFunctions;
+    //DriverObject->MajorFunction[IRP_MJ_CREATE] = MajorFunctions;
+    //DriverObject->MajorFunction[IRP_MJ_CLOSE] = MajorFunctions;
 
     status = IoCreateDevice(DriverObject, 0, &DEVICE_NAME, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE, &DriverObject->DeviceObject);
     if (!NT_SUCCESS(status)) KdPrint(("Could not create device %wZ", DEVICE_NAME));

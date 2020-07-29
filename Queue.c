@@ -114,6 +114,7 @@ Return Value:
 
 --*/
 {
+    NTSTATUS status;
     TraceEvents(TRACE_LEVEL_INFORMATION, 
                 TRACE_QUEUE, 
                 "%!FUNC! Queue 0x%p, Request 0x%p OutputBufferLength %d InputBufferLength %d IoControlCode %d", 
@@ -121,8 +122,53 @@ Return Value:
 
     KdPrint(("WacomPracticeEvtIoDeviceControl entered."));
 
-    if (IoControlCode == IOCTL_UWIRE_SETLED) {
-        KdPrint(("Received Control Code %d with Request = 0x%p", IoControlCode, Request));
+    PDEVICE_CONTEXT pDeviceContext = DeviceGetContext(WdfIoQueueGetDevice(Queue));
+    INT32* rgb;
+    int h, s, v;
+    PVOID buffer;
+    size_t bufSize;
+
+    KdPrint(("Received Control Code %d with Request = 0x%p", IoControlCode, Request));
+
+    switch (IoControlCode) {
+
+    case IOCTL_UWIRE_SETLED:
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(INT32), &buffer, &bufSize);
+        if (!NT_SUCCESS(status)) {
+            KdPrint(("Failed to retrieve input buffer."));
+            break;
+        }
+        rgb = (INT32*)buffer;
+        *rgb = *rgb & 0x00FFFFFF; // mask top 8 bits (just in case)
+        KdPrint(("Found RGB value of 0x%x in the input buffer.", *rgb));
+
+        SetLEDColor(pDeviceContext, (*rgb & 0xFF0000) >> 16, (*rgb & 0x00FF00) >> 8, *rgb & 0x0000FF);
+        break;
+
+    case IOCTL_UWIRE_BLINKLED:
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(INT32), &buffer, &bufSize);
+        if (!NT_SUCCESS(status)) {
+            KdPrint(("Failed to retrieve input buffer."));
+            break;
+        }
+        rgb = (INT32*)buffer;
+        *rgb = *rgb & 0x00FFFFFF; // mask top 8 bits (just in case)
+        KdPrint(("Found RGB value of 0x%x in the input buffer.", *rgb));
+        BlinkLEDColor(pDeviceContext, 10, (*rgb & 0xFF0000) >> 16, (*rgb & 0x00FF00) >> 8, *rgb & 0x0000FF);
+        break;
+
+    case IOCTL_UWIRE_FADELED:
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(INT32), &buffer, &bufSize);
+        if (!NT_SUCCESS(status)) {
+            KdPrint(("Failed to retrieve input buffer."));
+            break;
+        }
+        rgb = (INT32*)buffer;
+        *rgb = *rgb & 0x00FFFFFF; // mask top 8 bits (just in case)
+        KdPrint(("Found RGB value of 0x%x in the input buffer.", *rgb));
+        RGBtoHSV(&h, &s, &v, (*rgb & 0xFF0000) >> 16, (*rgb & 0x00FF00) >> 8, *rgb & 0x0000FF);
+        CycleLEDColor(pDeviceContext, h, s);
+        break;
     }
 
     WdfRequestComplete(Request, STATUS_SUCCESS);

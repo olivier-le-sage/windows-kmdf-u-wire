@@ -1,7 +1,12 @@
 /* 
-	A simple function to convert HSV color space values to RGB.
-	Taken from: http://www.nunosantos.net/archives/114
+	Simple functions to convert HSV color space values to RGB and vice versa.
 */
+
+#define MIN(a,b) (a < b ? a : b)
+#define MINTHREE(a,b,c) MIN(MIN(a,b),c)
+
+#define MAX(a,b) (a > b ? a : b)
+#define MAXTHREE(a,b,c) MAX(MAX(a,b),c)
 
 void HSVtoRGB(int* r, int* g, int* b, int h, int s, int v)
 {
@@ -53,4 +58,28 @@ void HSVtoRGB(int* r, int* g, int* b, int h, int s, int v)
         *b = q;
         break;
     }
+}
+
+void RGBtoHSV(int* h, int* s, int* v, int r, int g, int b) {
+    int rgbMin, rgbMax;
+
+    rgbMin = MINTHREE(r, g, b);
+    rgbMax = MAXTHREE(r, g, b);
+
+    *v = rgbMax;
+    
+    if (*v == 0) {
+        *h = *s = 0;
+        return;
+    }
+
+    *s = 255 * ((long)(rgbMax - rgbMin)) / *v;
+    if (*s == 0) {
+        *h = 0;
+        return;
+    }
+
+    if (rgbMax == r)      *h = 0 + 43 * (g - b) / (rgbMax - rgbMin);
+    else if (rgbMax == g) *h = 85 + 43 * (b - r) / (rgbMax - rgbMin);
+    else                  *h = 171 + 43 * (r - g) / (rgbMax - rgbMin);
 }

@@ -66,4 +66,29 @@ EVT_WDF_DEVICE_PREPARE_HARDWARE WacomPracticeEvtDevicePrepareHardware;
 //
 EVT_WDF_TIMER BlinkLEDColorCallback;
 
+//
+// Higher-level, functional routines that can be invoked to trigger certain behaviours
+//
+VOID BlinkLEDColor(
+    __in PDEVICE_CONTEXT DeviceContext,
+    __in int duration,
+    __in int r,
+    __in int g,
+    __in int b
+);
+VOID CycleLEDColor(
+    __in PDEVICE_CONTEXT DeviceContext,
+    __in int h,
+    __in int s
+);
+VOID SetLEDColor(
+    __in PDEVICE_CONTEXT DeviceContext,
+    __in int r,
+    __in int g,
+    __in int b
+);
+VOID GetFirmwareVersion(
+    __in PDEVICE_CONTEXT DeviceContext
+);
+
 EXTERN_C_END

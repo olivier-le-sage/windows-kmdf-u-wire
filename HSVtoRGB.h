@@ -5,3 +5,4 @@
 
 #pragma once
 void HSVtoRGB(int* r, int* g, int* b, int h, int s, int v);
+void RGBtoHSV(int* h, int* s, int* v, int r, int g, int b);

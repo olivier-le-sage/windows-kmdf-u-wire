@@ -17,7 +17,6 @@ Environment:
 #include "driver.h"
 #include "wdftimer.h"
 #include "device.tmh"
-#include "HSVtoRGB.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, WacomPracticeCreateDevice)
@@ -26,7 +25,9 @@ Environment:
 
 const __declspec(selectany) LONGLONG DEFAULT_CONTROL_TRANSFER_TIMEOUT = 5 * -1 * WDF_TIMEOUT_TO_SEC;
 
-// vendor commands for changing the RGB LED color 
+//
+// vendor commands
+//
 #define UWIRE_GET_FIRMWARE  0x22 // bRequest used to retrieve firmware version
 #define UWIRE_LED           0x36 // bRequest used to write/flush/preload the RGB LED
 #define UWIRE_CHANGE_SERIAL 0x37 // bRequest used to change the device serial number
@@ -46,8 +47,7 @@ const __declspec(selectany) LONGLONG DEFAULT_CONTROL_TRANSFER_TIMEOUT = 5 * -1 *
 // state variable for the blink routine
 typedef enum { ON, OFF } LedBlink;
 LedBlink ledBlinkState = OFF;
-BOOLEAN ledChanged = FALSE;
-int secondsRemaining = 0;
+int periodsRemaining = 0;
 
 NTSTATUS
 WacomPracticeCreateDevice(
@@ -198,7 +198,7 @@ VOID SetLEDColor(
     WDF_REQUEST_SEND_OPTIONS sendOptions;
     ULONG buffer = 0;
 
-    PAGED_CODE();
+    //PAGED_CODE();
 
     WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&memoryDescriptor, (PVOID)&buffer, sizeof(buffer));
 
@@ -212,7 +212,7 @@ VOID SetLEDColor(
 
     USHORT wValue = (USHORT)((g << 8) | PIN | 0x30); // The wValue and wIndex fields are used to transfer the
     USHORT wIndex = (USHORT)((b << 8) | r);          // data telling the MCU which color to send to the LED's internal controller
-    WDF_USB_CONTROL_SETUP_PACKET_INIT_VENDOR(&controlSetupPacket, BmRequestHostToDevice, BmRequestToDevice, UWIRE_LED, wValue, wIndex);
+    WDF_USB_CONTROL_SETUP_PACKET_INIT_VENDOR(&controlSetupPacket, BmRequestDeviceToHost, BmRequestToDevice, UWIRE_LED, wValue, wIndex);
 
     status = WdfUsbTargetDeviceSendControlTransferSynchronously(DeviceContext->UsbDevice,
         WDF_NO_HANDLE,
@@ -229,7 +229,7 @@ VOID SetLEDColor(
     else {
         KdPrint(("Device %d: Successfully set LED to RGB = (%d,%d,%d)\n", DeviceContext->DeviceNumber, r, g, b));
     }
-    KdPrint(("Buffer val = 0x%x", buffer));
+    KdPrint(("DEBUG: setup packet return buffer val = 0x%x", buffer));
 
     return;
 }
@@ -251,12 +251,16 @@ VOID CycleLEDColor(
 
     // cycling through v values from 0 to 100% then back to 0, three times
     for (int i = 0; i < 3; i++) {
+        LARGE_INTEGER delay;
+        delay.QuadPart = 30000; // 30,000 * 100 ns = 3,000,000 ns = 3 ms
         for (int j = 0; j <= 100; j++) {
             v = j;
             // convert to RGB color space
             HSVtoRGB(&r, &g, &b, h, s, v);
             // send through USB packet
             SetLEDColor(DeviceContext, r, g, b);
+            // delay for 3 ms
+            KeDelayExecutionThread(KernelMode, FALSE, &delay); 
         }
 
         for (int j = 100; j >= 0; j--) {
@@ -265,6 +269,8 @@ VOID CycleLEDColor(
             HSVtoRGB(&r, &g, &b, h, s, v);
             // send through USB packet
             SetLEDColor(DeviceContext, r, g, b);
+            // delay for 3 ms
+            KeDelayExecutionThread(KernelMode, FALSE, &delay);
         }
     }
     return;
@@ -276,8 +282,7 @@ VOID BlinkLEDColorCallback(
 )
 /* The callback to the timer used to blink the LED */
 {
-    WDFOBJECT timerObject = WdfTimerGetParentObject(timer);
-    UNREFERENCED_PARAMETER(timerObject);
+    UNREFERENCED_PARAMETER(timer);
 
     switch (ledBlinkState) {
     case(ON):
@@ -287,8 +292,7 @@ VOID BlinkLEDColorCallback(
         ledBlinkState = ON;
         break;
     }
-    secondsRemaining -= 1;
-    ledChanged = TRUE;
+    if (periodsRemaining > 0) periodsRemaining -= 1;
 }
 
 VOID BlinkLEDColor(
@@ -299,14 +303,15 @@ VOID BlinkLEDColor(
     __in int b
 )
 /* Blinks the color selected on the LED
- * - Set duration to -1 to blink indefinitely; otherwise duration is the number of seconds to blink for
+ * - Set duration to -1 to blink indefinitely; otherwise duration is the number of periods to blink for
  */
 {
     NTSTATUS status;
     WDFTIMER timer;
-    WDFOBJECT timerObject;
     WDF_TIMER_CONFIG timerConfig;
     WDF_OBJECT_ATTRIBUTES timerAttrib;
+    LARGE_INTEGER delay1ms;
+    delay1ms.QuadPart = 10000; // 10,000 * 100 ns = 1,000,000 ns = 1 ms
 
     //
     //  Set up a WDF timer for color change every second
@@ -316,6 +321,7 @@ VOID BlinkLEDColor(
     timerConfig.TolerableDelay = 50; // +/- 5% error range
     timerConfig.AutomaticSerialization = TRUE;
     WDF_OBJECT_ATTRIBUTES_INIT(&timerAttrib);
+    timerAttrib.ParentObject = WdfObjectContextGetObject(DeviceContext);
     status = WdfTimerCreate(&timerConfig, &timerAttrib, &timer);
 
     if (!NT_SUCCESS(status)) {
@@ -324,35 +330,23 @@ VOID BlinkLEDColor(
     }
     else KdPrint(("Successfully set up timer for LED blink routine."));
 
-    // get the timer's parent object
-    timerObject = WdfTimerGetParentObject(timer);
-
     //
     // Start the timer
     //
-    secondsRemaining = duration;
+    periodsRemaining = duration;
     WdfTimerStart(timer, 0); // due time of 0 --> start immediately
 
     //
-    // Determine when or whether to stop the timer
-    // 
+    // Determine when or whether to stop the timer -- poll every 1 ms
+    //
     while (TRUE) {
-        if (ledChanged) {
-            if (duration == -1) {
-                if (ledBlinkState == ON) SetLEDColor(DeviceContext, r, g, b);
-                else SetLEDColor(DeviceContext, 0, 0, 0);
-            }
-            else if (secondsRemaining) {
-                SetLEDColor(DeviceContext, r, g, b);
-            }
-            else {
-                SetLEDColor(DeviceContext, 0, 0, 0);
-                ledBlinkState = OFF;
-                ledChanged = FALSE;
-                WdfTimerStop(timer, TRUE); // stop and wait for queued DCPs to execute
-                break; // exit while loop and return from function
-            }
-            ledChanged = FALSE;
+        KeDelayExecutionThread(KernelMode, FALSE, &delay1ms); // delay by 1 ms
+        if (ledBlinkState == ON) SetLEDColor(DeviceContext, r, g, b);
+        else SetLEDColor(DeviceContext, 0, 0, 0);
+
+        if (periodsRemaining == 0) {
+            WdfTimerStop(timer, TRUE); // stop and wait for queued DCPs to execute
+            break; // exit while loop and return from function
         }
     }
 }
@@ -449,8 +443,10 @@ Return Value:
 
     // on startup, retrieve the firmware version and turn on the LED
     GetFirmwareVersion(pDeviceContext);
-    // SetLEDColor(pDeviceContext, 243, 236, 119); // a brightish yellow
-    CycleLEDColor(pDeviceContext, 55, 35); // H=55 degrees, S=35% <=> a light yellow
+    //SetLEDColor(pDeviceContext, 243, 236, 119); // a brightish yellow
+    //SetLEDColor(pDeviceContext, 255, 255, 255); // bright white
+    //SetLEDColor(pDeviceContext, 128, 0, 0); // pure, medium-intensity red
+    //CycleLEDColor(pDeviceContext, 55, 35); // H=55 degrees, S=35% <=> a light yellow
     //BlinkLEDColor(pDeviceContext, 6, 100, 100, 100); // blink with standard white light for 6 seconds
 
     if (!NT_SUCCESS(status)) {
@@ -460,6 +456,5 @@ Return Value:
     }
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "%!FUNC! Exit");
-
     return status;
 }

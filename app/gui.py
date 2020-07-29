@@ -27,7 +27,7 @@ class UWireColorPicker(QWidget):
         # Adjust window position and size
         self.setGeometry(self.left, self.top, self.width, self.height)
         center = QDesktopWidget().availableGeometry().center()
-        self.move(center.x() - self.width/2, center.y() - self.height/2)
+        self.move(center.x() - int(self.width/2), center.y() - int(self.height/2))
 
         # Populate UI contents & layout
         #self.setWindowIcon(QtGui.QIcon("icon.png"))
@@ -58,7 +58,7 @@ class UWireColorPicker(QWidget):
         qp = QPainter(self)
         qp.setPen(self.current_color)
         qp.setBrush(self.current_color)
-        qp.drawEllipse(self.width/2-10, self.height/2-10, 25, 25)
+        qp.drawEllipse(int(self.width/2)-10, int(self.height/2-10), 25, 25)
 
     def check_driver(self, status):
         #print("DEBUG: returned " + str(status))
