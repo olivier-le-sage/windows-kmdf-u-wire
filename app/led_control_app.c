@@ -38,7 +38,7 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     for(unsigned int i = 0; i < sizeof(inBuffer); i++)
         printf("%02X ", (unsigned char) inBuffer[i]);
     printf("\n");
-    device = CreateFileW(L"\\\\.\\Wacom_Practice_Device",
+    device = CreateFileW(L"\\\\.\\WacomPracticeDeviceLink",
                          GENERIC_ALL,
                          0,
                          0,
