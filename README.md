@@ -22,7 +22,7 @@ and communicate with devices running cpldcpu's firmware.
 ### GUI ###
 
 A bare-bones pyQt 5 GUI is included in /app/. It acts as a wrapper around C code
-that uses IOCTL requests to communicate with the driver. The driver must of course
+that uses IOCTL requests to communicate with the driver interface. The driver must of course
 already be installed. 
 
 ### Implementation ###

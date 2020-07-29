@@ -15,8 +15,8 @@ endif
 all: led_control_app.dll
 
 led_control_app.dll: led_control_app.c led_control_app.h
-	gcc -std=c11 -Wall -Wextra -pedantic -c -fPIC led_control_app.c -o led_control_app.o
-	gcc -shared led_control_app.o -o led_control_app.dll
+	gcc -std=c11 -Wall -Wextra -pedantic -c -fPIC led_control_app.c -o led_control_app.o -lsetupapi
+	gcc -shared led_control_app.o -o led_control_app.dll -lsetupapi
 
 .PHONY: clean
 clean:

@@ -12,6 +12,8 @@
 
 #include <windows.h>
 #include <winioctl.h>
+#include <setupapi.h>
+#include <initguid.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
