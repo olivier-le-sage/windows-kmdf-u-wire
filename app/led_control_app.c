@@ -34,20 +34,22 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     rgb->g = g;
     rgb->b = b;
     RtlCopyMemory(inBuffer, rgb, sizeof(RGB_data)); // same as memcpy()
-    printf("DEBUG: Printing inBuffer contents:\n");
-    for(unsigned int i = 0; i < sizeof(inBuffer); i++)
-        printf("%02X ", (unsigned char) inBuffer[i]);
-    printf("\n");
+    //printf("DEBUG: Printing inBuffer contents:\n");
+    //for(unsigned int i = 0; i < sizeof(inBuffer); i++)
+    //    printf("%02X ", (unsigned char) inBuffer[i]);
+    //printf("\n");
     device = CreateFileW(L"\\\\.\\WacomPracticeDeviceLink",
                          GENERIC_ALL,
                          0,
                          0,
                          OPEN_EXISTING,
-                         FILE_ATTRIBUTE_SYSTEM,
+                         FILE_ATTRIBUTE_NORMAL,
                          0);
 
     if (device == INVALID_HANDLE_VALUE) {
-        printf("> Could not open device: 0x%lx\n", GetLastError());
+        long unsigned int errorCode = GetLastError();
+        if (errorCode == ERROR_ACCESS_DENIED) printf("> Device found but access was denied! Try running as admin.");
+        printf("> Could not open device: 0x%lx\n", errorCode);
         return FALSE;
     }
 
