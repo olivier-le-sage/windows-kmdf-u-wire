@@ -40,28 +40,28 @@ static const CHAR* find_device() {
     //
     HDEVINFO hDevInfo = SetupDiGetClassDevs(&GUID_DEVINTERFACE_WacomPractice,
                                             NULL,
-                                            NULL,
+                                            0,
                                             DIGCF_PRESENT|DIGCF_DEVICEINTERFACE);
 
     if (hDevInfo == INVALID_HANDLE_VALUE) {
-        printf("SetupDiGetClassDevs() failed. Error: %ld", GetLastError());
+        printf("SetupDiGetClassDevs() failed. Error: %ld\n", GetLastError());
         return NULL;
     }
+    DevIntfData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
     if (!SetupDiEnumDeviceInterfaces(hDevInfo, NULL, &GUID_DEVINTERFACE_WacomPractice, dwMemberIdx, &DevIntfData)) {
-        printf("SetupDiEnumDeviceInterfaces() failed. Error: %ld", GetLastError());
+        printf("SetupDiEnumDeviceInterfaces() failed. Error: %ld\n", GetLastError());
         return NULL;
     }
     // get the required buffer size and store it in dwSize using a NULL call
-    DevIntfData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
     if (!SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, NULL, 0, &dwSize, NULL)) {
-        printf("SetupDiGetDeviceInterfaceDetail() failed while getting the required buffer size. Error: %ld", GetLastError());
+        printf("SetupDiGetDeviceInterfaceDetail() failed while getting the required buffer size. Error: %ld\n", GetLastError());
         return NULL;
     }
     DevIntfDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(dwSize);
     DevIntfDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
     // now perform the real call
     if (!SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, DevIntfDetailData, dwSize, &dwSize, &DevData)) {
-        printf("SetupDiGetDeviceInterfaceDetail() failed while populating DevIntfDetailData. Error: %ld", GetLastError());
+        printf("SetupDiGetDeviceInterfaceDetail() failed while populating DevIntfDetailData. Error: %ld\n", GetLastError());
         return NULL;
     }
 
@@ -100,6 +100,8 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
                         OPEN_EXISTING,
                         FILE_ATTRIBUTE_NORMAL,
                         0);
+
+    free((char*)device_path);
 
     if (device == INVALID_HANDLE_VALUE) {
         long unsigned int errorCode = GetLastError();
