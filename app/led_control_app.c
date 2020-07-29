@@ -53,9 +53,13 @@ static const CHAR* find_device() {
         return NULL;
     }
     // get the required buffer size and store it in dwSize using a NULL call
+    // a result of ERROR_INSUFFICIENT_BUFFER indicates success
     if (!SetupDiGetDeviceInterfaceDetail(hDevInfo, &DevIntfData, NULL, 0, &dwSize, NULL)) {
-        printf("SetupDiGetDeviceInterfaceDetail() failed while getting the required buffer size. Error: %ld\n", GetLastError());
-        return NULL;
+        long unsigned int lastError = GetLastError();
+        if (lastError != ERROR_INSUFFICIENT_BUFFER) {
+            printf("SetupDiGetDeviceInterfaceDetail() failed while getting the required buffer size. Error: %ld\n", lastError);
+            return NULL;
+        }
     }
     DevIntfDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(dwSize);
     DevIntfDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
