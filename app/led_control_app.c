@@ -106,8 +106,6 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
                         FILE_ATTRIBUTE_NORMAL,
                         0);
 
-    free((char*)device_path);
-
     if (device == INVALID_HANDLE_VALUE) {
         long unsigned int errorCode = GetLastError();
         if (errorCode == ERROR_ACCESS_DENIED) printf("> Device found but access was denied! Try running as admin.\n");
