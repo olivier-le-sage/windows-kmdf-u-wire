@@ -24,7 +24,8 @@ extern "C" {
 #endif
 
 BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b);
-BOOL uwire_blink_led(int duration);
+BOOL uwire_blink_led(unsigned char duration, unsigned char r, unsigned char g, unsigned char b);
+BOOL uwire_fade_led(unsigned char duration, unsigned char r, unsigned char g, unsigned char b);
 
 #ifdef __cplusplus
 }

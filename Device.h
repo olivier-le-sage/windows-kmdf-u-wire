@@ -78,6 +78,7 @@ VOID BlinkLEDColor(
 );
 VOID CycleLEDColor(
     __in PDEVICE_CONTEXT DeviceContext,
+    __in int num_cycles,
     __in int h,
     __in int s
 );

@@ -6,7 +6,7 @@ import ctypes.util
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
-from PyQt5.QtWidgets import QColorDialog, QHBoxLayout, QDesktopWidget, QMessageBox
+from PyQt5.QtWidgets import QColorDialog, QVBoxLayout, QDesktopWidget, QMessageBox
 from PyQt5.QtGui  import QIcon, QPainter, QColor, QPen
 from PyQt5.QtCore import Qt
 
@@ -31,7 +31,6 @@ class UWireColorPicker(QWidget):
 
         # Populate UI contents & layout
         #self.setWindowIcon(QtGui.QIcon("icon.png"))
-        layout = QHBoxLayout()
 
         color_button = QPushButton("Color", self)
         color_button.setToolTip("Opens color dialog")
@@ -41,12 +40,18 @@ class UWireColorPicker(QWidget):
         blink_button.setToolTip("Blinks the LED for a few seconds")
         blink_button.clicked.connect(self.blink)
 
+        fade_button = QPushButton("Fade", self)
+        fade_button.setToolTip("Fades the LED for a few seconds")
+        fade_button.clicked.connect(self.fade)
+
         p = self.palette()
         p.setColor(self.backgroundRole(), Qt.white)
 
+        layout = QVBoxLayout()
         layout.addWidget(color_button)
-        layout.addStretch(1)
         layout.addWidget(blink_button)
+        layout.addWidget(fade_button)
+        layout.addStretch(1)
 
         self.setPalette(p)
         self.setLayout(layout)
@@ -58,7 +63,7 @@ class UWireColorPicker(QWidget):
         qp = QPainter(self)
         qp.setPen(self.current_color)
         qp.setBrush(self.current_color)
-        qp.drawEllipse(int(self.width/2)-10, int(self.height/2-10), 25, 25)
+        qp.drawEllipse(int(self.width/2)-12, int(self.height/1.3)-12, 25, 25)
 
     def check_driver(self, status):
         #print("DEBUG: returned " + str(status))
@@ -85,7 +90,19 @@ class UWireColorPicker(QWidget):
             self.check_driver(status)
 
     def blink(self):
-        status = self.clib_handle.uwire_blink_led(c_int(5)) # blink for 5 seconds
+         # blink for 5 seconds
+        status = self.clib_handle.uwire_blink_led(c_ubyte(5),
+                                                  c_ubyte(self.current_color.red()),
+                                                  c_ubyte(self.current_color.green()),
+                                                  c_ubyte(self.current_color.blue()))
+        self.check_driver(status)
+
+    def fade(self):
+        # fade for 5 seconds
+        status = self.clib_handle.uwire_fade_led(c_ubyte(5),
+                                                 c_ubyte(self.current_color.red()),
+                                                 c_ubyte(self.current_color.green()),
+                                                 c_ubyte(self.current_color.blue()))
         self.check_driver(status)
 
 if __name__ == '__main__':

@@ -17,6 +17,7 @@ DEFINE_GUID (GUID_DEVINTERFACE_WacomPractice,
     0xcfab8b22,0x3ad1,0x4edf,0x86,0x26,0xd2,0xc7,0xe2,0x92,0xe0,0x4d);
 
 typedef struct RGB_data {
+    unsigned char duration;
     unsigned char r;
     unsigned char g;
     unsigned char b;
@@ -78,8 +79,8 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
     HANDLE device = INVALID_HANDLE_VALUE;
     BOOL status = FALSE;
     DWORD bytesReturned = 0;
-    CHAR inBuffer[16] = {0};  // was [128]
-    CHAR outBuffer[16] = {0}; // was [128]
+    CHAR inBuffer[4] = {0};  // can be increased
+    CHAR outBuffer[4] = {0}; // can be increased
     const CHAR* device_path;
 
     // find the device
@@ -91,8 +92,9 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
         printf("Found device path string: [%s]\n", device_path);
     }
 
-    // send the data in as a 24-bit lump of data -- the driver will know how to deal with it
+    // send the data in as a 32-bit lump of data -- the driver will know how to deal with it
     RGB_data* rgb = (RGB_data*)malloc(sizeof(RGB_data));
+    rgb->duration = 0; // duration ignored
     rgb->r = r;
     rgb->g = g;
     rgb->b = b;
@@ -124,19 +126,18 @@ BOOL uwire_set_led_color(unsigned char r, unsigned char g, unsigned char b) {
                              (LPOVERLAPPED) NULL);
 
     printf("> IOCTL_UWIRE_SETLED 0x%x issued\n", IOCTL_UWIRE_SETLED);
-    printf("> Returned by the kernel: %s. Received buffer size: %lu\n", outBuffer, bytesReturned);
+    printf("> Returned by the kernel: %s.\n> Received buffer size: %lu\n", outBuffer, bytesReturned);
 
     CloseHandle(device);
     return status;
 }
 
-BOOL uwire_blink_led(int duration) {
-    // open the USB device
+BOOL uwire_blink_led(unsigned char duration, unsigned char r, unsigned char g, unsigned char b) {
     HANDLE device = INVALID_HANDLE_VALUE;
     BOOL status = FALSE;
     DWORD bytesReturned = 0;
-    CHAR inBuffer[128] = {0};
-    CHAR outBuffer[128] = {0};
+    CHAR inBuffer[4] = {0}; // can be increased
+    CHAR outBuffer[4] = {0}; // can be increased
     const CHAR* device_path;
 
     // find the device
@@ -148,8 +149,13 @@ BOOL uwire_blink_led(int duration) {
         printf("Found device path string: %s\n", device_path);
     }
 
-    printf("DEBUG: Sending in (buffer contents) 0x%x\n", duration);
-    RtlCopyMemory(inBuffer, &duration, sizeof(duration));
+    // send the data in as a 32-bit lump of data -- the driver will know how to deal with it
+    RGB_data* rgb = (RGB_data*)malloc(sizeof(RGB_data));
+    rgb->duration = duration;
+    rgb->r = r;
+    rgb->g = g;
+    rgb->b = b;
+    RtlCopyMemory(inBuffer, rgb, sizeof(RGB_data)); // same as memcpy()
     device = CreateFile(device_path,
                         GENERIC_ALL,
                         0,
@@ -174,7 +180,61 @@ BOOL uwire_blink_led(int duration) {
                              (LPOVERLAPPED) NULL);
 
     printf("> IOCTL_UWIRE_BLINKLED 0x%x issued\n", IOCTL_UWIRE_BLINKLED);
-    printf("> Returned by the kernel: %s. Received buffer size: %lu\n", outBuffer, bytesReturned);
+    printf("> Returned by the kernel: %s.\n> Received buffer size: %lu\n", outBuffer, bytesReturned);
+
+    CloseHandle(device);
+    return status;
+}
+
+BOOL uwire_fade_led(unsigned char num_cycles, unsigned char r, unsigned char g, unsigned char b) {
+    HANDLE device = INVALID_HANDLE_VALUE;
+    BOOL status = FALSE;
+    DWORD bytesReturned = 0;
+    CHAR inBuffer[4] = {0}; // can be increased
+    CHAR outBuffer[4] = {0}; // can be increased
+    const CHAR* device_path;
+
+    // find the device
+    device_path = find_device();
+    if (device_path == NULL) {
+        printf("Failed to elaborate device path string.\n");
+        return FALSE;
+    } else {
+        printf("Found device path string: %s\n", device_path);
+    }
+
+    // send the data in as a 32-bit lump of data -- the driver will know how to deal with it
+    RGB_data* rgb = (RGB_data*)malloc(sizeof(RGB_data));
+    rgb->duration = num_cycles;
+    rgb->r = r;
+    rgb->g = g;
+    rgb->b = b;
+    RtlCopyMemory(inBuffer, rgb, sizeof(RGB_data)); // same as memcpy()
+    device = CreateFile(device_path,
+                        GENERIC_ALL,
+                        0,
+                        0,
+                        OPEN_EXISTING,
+                        FILE_ATTRIBUTE_SYSTEM,
+                        0);
+
+    if (device == INVALID_HANDLE_VALUE) {
+        printf("> Could not open device: 0x%lx\n", GetLastError());
+        return FALSE;
+    }
+
+    printf("> Issuing IOCTL_UWIRE_FADELED 0x%x\n", IOCTL_UWIRE_FADELED);
+    status = DeviceIoControl(device,
+                             IOCTL_UWIRE_FADELED,
+                             inBuffer,
+                             sizeof(inBuffer),
+                             outBuffer,
+                             sizeof(outBuffer),
+                             &bytesReturned,
+                             (LPOVERLAPPED) NULL);
+
+    printf("> IOCTL_UWIRE_FADELED 0x%x issued\n", IOCTL_UWIRE_FADELED);
+    printf("> Returned by the kernel: %s.\n> Received buffer size: %lu\n", outBuffer, bytesReturned);
 
     CloseHandle(device);
     return status;

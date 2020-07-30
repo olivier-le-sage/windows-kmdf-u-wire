@@ -237,6 +237,7 @@ VOID SetLEDColor(
 
 VOID CycleLEDColor(
     __in PDEVICE_CONTEXT DeviceContext,
+    __in int num_cycles,
     __in int h,
     __in int s
 )
@@ -249,8 +250,8 @@ VOID CycleLEDColor(
     int g;
     int b;
 
-    // cycling through v values from 0 to 100% then back to 0, three times
-    for (int i = 0; i < 3; i++) {
+    // cycling through v values from 0 to 100% then back to 0
+    for (int i = 0; i < num_cycles; i++) {
         LARGE_INTEGER delay;
         delay.QuadPart = 30000; // 30,000 * 100 ns = 3,000,000 ns = 3 ms
         for (int j = 0; j <= 100; j++) {
