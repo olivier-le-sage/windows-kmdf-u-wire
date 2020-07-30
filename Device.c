@@ -229,7 +229,7 @@ VOID SetLEDColor(
     else {
         KdPrint(("Device %d: Successfully set LED to RGB = (%d,%d,%d)\n", DeviceContext->DeviceNumber, r, g, b));
     }
-    KdPrint(("DEBUG: setup packet return buffer val = 0x%x", buffer));
+    //KdPrint(("DEBUG: setup packet return buffer val = 0x%x\n", buffer));
 
     return;
 }

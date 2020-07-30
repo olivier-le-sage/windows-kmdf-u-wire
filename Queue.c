@@ -139,10 +139,9 @@ Return Value:
             break;
         }
         rgb = (INT32*)buffer;
-        *rgb = *rgb & 0x00FFFFFF; // mask top 8 bits (just in case)
-        KdPrint(("Found value of 0x%x in the input buffer.\n", *rgb));
+        KdPrint(("Found value of 0x%lx in the input buffer.\n", *rgb));
 
-        SetLEDColor(pDeviceContext, *rgb & 0x0000FF, (*rgb & 0x00FF00) >> 8, (*rgb & 0xFF0000) >> 16);
+        SetLEDColor(pDeviceContext, (*rgb & 0x0000FF00)>>8, (*rgb & 0x00FF0000)>>16, (*rgb & 0xFF000000)>>24);
         break;
 
     case IOCTL_UWIRE_BLINKLED:
@@ -152,8 +151,8 @@ Return Value:
             break;
         }
         rgb = (INT32*)buffer;
-        KdPrint(("Found value of 0x%x in the input buffer.\n", *rgb));
-        BlinkLEDColor(pDeviceContext, *rgb & 0x0000FF, (*rgb & 0x00FF00)>>8, (*rgb & 0xFF0000)>>16, (*rgb & 0xFF000000) >> 24);
+        KdPrint(("Found value of 0x%lx in the input buffer.\n", *rgb));
+        BlinkLEDColor(pDeviceContext, *rgb & 0x000000FF, (*rgb & 0x0000FF00)>>8, (*rgb & 0x00FF0000)>>16, (*rgb & 0xFF000000) >> 24);
         break;
 
     case IOCTL_UWIRE_FADELED:
@@ -163,7 +162,7 @@ Return Value:
             break;
         }
         rgb = (INT32*)buffer;
-        KdPrint(("Found value of 0x%x in the input buffer.\n", *rgb));
+        KdPrint(("Found value of 0x%lx in the input buffer.\n", *rgb));
         RGBtoHSV(&h, &s, &v, (*rgb & 0x00FF00) >> 8, (*rgb & 0xFF0000) >> 16, (*rgb & 0xFF000000) >> 24);
         CycleLEDColor(pDeviceContext, *rgb & 0x0000FF, h, s);
         break;
