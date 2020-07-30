@@ -253,7 +253,7 @@ VOID CycleLEDColor(
     // cycling through v values from 0 to 100% then back to 0
     for (int i = 0; i < num_cycles; i++) {
         LARGE_INTEGER delay;
-        delay.QuadPart = 30000; // 30,000 * 100 ns = 3,000,000 ns = 3 ms
+        delay.QuadPart = 60000; // 60,000 * 100 ns = 6,000,000 ns = 6 ms
         for (int j = 0; j <= 100; j++) {
             v = j;
             // convert to RGB color space
@@ -444,11 +444,6 @@ Return Value:
 
     // on startup, retrieve the firmware version and turn on the LED
     GetFirmwareVersion(pDeviceContext);
-    //SetLEDColor(pDeviceContext, 243, 236, 119); // a brightish yellow
-    //SetLEDColor(pDeviceContext, 255, 255, 255); // bright white
-    //SetLEDColor(pDeviceContext, 128, 0, 0); // pure, medium-intensity red
-    //CycleLEDColor(pDeviceContext, 55, 35); // H=55 degrees, S=35% <=> a light yellow
-    //BlinkLEDColor(pDeviceContext, 6, 100, 100, 100); // blink with standard white light for 6 seconds
 
     if (!NT_SUCCESS(status)) {
         TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE,
