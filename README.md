@@ -9,6 +9,12 @@ It can be used to build simple USB devices.
 The standard kernel-mode windows driver provided here can be used to recognize
 and communicate with devices running cpldcpu's firmware.
 
+### Demo ###
+
+![device recognition](assets/device_recognition.gif?raw=true "")
+
+![basic functionality](assets/fade_and_color.gif?raw=true "")
+
 ### Requirements ###
 
 - Tested with WDK for Windows 10, version 2004 (will likely work with other versions)
@@ -23,7 +29,7 @@ and communicate with devices running cpldcpu's firmware.
 
 A bare-bones pyQt 5 GUI is included in /app/. It acts as a wrapper around C code
 that uses IOCTL requests to communicate with the driver interface. The driver must of course
-already be installed. 
+already be installed.
 
 ### Implementation ###
 
@@ -31,7 +37,8 @@ A prototype circuit built with a stripped-down usb cable:
 
 ![Circuit Prototype](assets/usb_hw_impl.jpg?raw=true "")
 
-<!--
-### WinDbg ###
+### WinDbg Verification ###
 
-TBD-->
+Some debugging output showing the device driver is working correctly:
+
+![Windbg](assets/windbg_verif.PNG?raw=true "")
