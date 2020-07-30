@@ -31,12 +31,13 @@ A bare-bones pyQt 5 GUI is included in /app/. It acts as a wrapper around C code
 that uses IOCTL requests to communicate with the driver interface. The driver must of course
 already be installed.
 
+<!--
 ### Implementation ###
 
 A prototype circuit built with a stripped-down usb cable:
 
 ![Circuit Prototype](assets/usb_hw_impl.jpg?raw=true "")
-
+-->
 ### WinDbg Verification ###
 
 Some debugging output showing the device driver is working correctly:
