@@ -91,14 +91,14 @@ class UWireColorPicker(QWidget):
 
     def blink(self):
          # blink for 5 seconds
-        status = self.clib_handle.uwire_blink_led(c_ubyte(5),
+        status = self.clib_handle.uwire_blink_led(c_ubyte(10),
                                                   c_ubyte(self.current_color.red()),
                                                   c_ubyte(self.current_color.green()),
                                                   c_ubyte(self.current_color.blue()))
         self.check_driver(status)
 
     def fade(self):
-        # fade for 5 seconds
+        # fade for 5 cycles
         status = self.clib_handle.uwire_fade_led(c_ubyte(5),
                                                  c_ubyte(self.current_color.red()),
                                                  c_ubyte(self.current_color.green()),
