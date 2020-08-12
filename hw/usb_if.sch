@@ -1094,10 +1094,15 @@ Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
 <net name="N$6" class="0">
 <segment>
 <wire x1="134.62" y1="58.42" x2="134.62" y2="63.5" width="0.1524" layer="91"/>
-<wire x1="134.62" y1="63.5" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="134.62" y1="63.5" x2="111.76" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="63.5" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="96.52" y1="63.5" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="101.6" y1="60.96" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
 <junction x="101.6" y="63.5"/>
+<pinref part="X1" gate="G$1" pin="D-"/>
+<wire x1="116.84" y1="50.8" x2="111.76" y2="50.8" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="50.8" x2="111.76" y2="63.5" width="0.1524" layer="91"/>
+<junction x="111.76" y="63.5"/>
 </segment>
 </net>
 <net name="N$4" class="0">
