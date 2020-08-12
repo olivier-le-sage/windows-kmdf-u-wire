@@ -792,91 +792,6 @@ Based on the datasheets for the following products.&lt;br&gt;
 </deviceset>
 </devicesets>
 </library>
-<library name="inductors" urn="urn:adsk.eagle:library:243">
-<description>&lt;b&gt;Inductors and Filters&lt;/b&gt;&lt;p&gt;
-Based on the previous library ind-a.lbr&lt;p&gt;
-&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
-<packages>
-<package name="0402" urn="urn:adsk.eagle:footprint:15049/1" library_version="3">
-<description>&lt;b&gt;EMIFIL (R) Chip Ferrite Bead for GHz Noise&lt;/b&gt;&lt;p&gt;
-Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
-<wire x1="-0.245" y1="0.224" x2="0.245" y2="0.224" width="0.1524" layer="51"/>
-<wire x1="0.245" y1="-0.224" x2="-0.245" y2="-0.224" width="0.1524" layer="51"/>
-<wire x1="-1.473" y1="0.483" x2="1.473" y2="0.483" width="0.0508" layer="39"/>
-<wire x1="1.473" y1="0.483" x2="1.473" y2="-0.483" width="0.0508" layer="39"/>
-<wire x1="1.473" y1="-0.483" x2="-1.473" y2="-0.483" width="0.0508" layer="39"/>
-<wire x1="-1.473" y1="-0.483" x2="-1.473" y2="0.483" width="0.0508" layer="39"/>
-<smd name="1" x="-0.65" y="0" dx="0.7" dy="0.9" layer="1"/>
-<smd name="2" x="0.65" y="0" dx="0.7" dy="0.9" layer="1"/>
-<text x="-0.635" y="0.635" size="1.27" layer="25">&gt;NAME</text>
-<text x="-0.635" y="-1.905" size="1.27" layer="27">&gt;VALUE</text>
-<rectangle x1="-0.554" y1="-0.3048" x2="-0.254" y2="0.2951" layer="51"/>
-<rectangle x1="0.2588" y1="-0.3048" x2="0.5588" y2="0.2951" layer="51"/>
-<rectangle x1="-0.1999" y1="-0.4001" x2="0.1999" y2="0.4001" layer="35"/>
-</package>
-</packages>
-<packages3d>
-<package3d name="0402" urn="urn:adsk.eagle:package:15132/1" type="box" library_version="3">
-<description>EMIFIL (R) Chip Ferrite Bead for GHz Noise
-Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
-<packageinstances>
-<packageinstance name="0402"/>
-</packageinstances>
-</package3d>
-</packages3d>
-<symbols>
-<symbol name="L" urn="urn:adsk.eagle:symbol:15039/1" library_version="3">
-<text x="-3.81" y="1.3716" size="1.778" layer="95">&gt;NAME</text>
-<text x="-3.81" y="-2.921" size="1.778" layer="96">&gt;VALUE</text>
-<rectangle x1="-2.54" y1="-0.889" x2="2.54" y2="0.889" layer="94"/>
-<pin name="2" x="5.08" y="0" visible="off" length="short" direction="pas" swaplevel="1" rot="R180"/>
-<pin name="1" x="-5.08" y="0" visible="off" length="short" direction="pas" swaplevel="1"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="BLM15H" urn="urn:adsk.eagle:component:15207/2" prefix="L" library_version="3">
-<description>&lt;b&gt;EMIFIL (R) Chip Ferrite Bead for GHz Noise&lt;/b&gt;&lt;p&gt;
-Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
-<gates>
-<gate name="G$1" symbol="L" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="0402">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-</connects>
-<package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:15132/1"/>
-</package3dinstances>
-<technologies>
-<technology name="B121SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-<technology name="B221SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-<technology name="D102SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-<technology name="D182SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-<technology name="D601SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-<technology name="G102SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-<technology name="G601SN1">
-<attribute name="POPULARITY" value="0" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 </libraries>
 <attributes>
 </attributes>
@@ -929,7 +844,6 @@ Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="LED1" library="WS2812B" deviceset="WS2812B" device="3535"/>
 <part name="GND6" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="FB1" library="inductors" library_urn="urn:adsk.eagle:library:243" deviceset="BLM15H" device="" package3d_urn="urn:adsk.eagle:package:15132/1" technology="B121SN1"/>
 </parts>
 <sheets>
 <sheet>
@@ -972,7 +886,7 @@ Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
 <attribute name="TAG" x="91.44" y="66.04" size="1.778" layer="96"/>
 </instance>
 <instance part="R4" gate="G$1" x="101.6" y="55.88" smashed="yes" rot="R90">
-<attribute name="TAG" x="99.06" y="58.42" size="1.778" layer="96" rot="R180"/>
+<attribute name="TAG" x="104.14" y="55.88" size="1.778" layer="96"/>
 </instance>
 <instance part="P+2" gate="1" x="2.54" y="68.58" smashed="yes">
 <attribute name="VALUE" x="2.54" y="68.58" size="1.778" layer="96"/>
@@ -996,9 +910,6 @@ Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
 <instance part="LED1" gate="G$1" x="86.36" y="27.94" smashed="yes"/>
 <instance part="GND6" gate="1" x="86.36" y="10.16" smashed="yes">
 <attribute name="VALUE" x="83.82" y="7.62" size="1.778" layer="96"/>
-</instance>
-<instance part="FB1" gate="G$1" x="111.76" y="55.88" smashed="yes" rot="R90">
-<attribute name="NAME" x="110.49" y="59.5884" size="1.778" layer="95" rot="R180"/>
 </instance>
 </instances>
 <busses>
@@ -1106,15 +1017,16 @@ Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
 </net>
 <net name="N$6" class="0">
 <segment>
+<wire x1="111.76" y1="63.5" x2="111.76" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="134.62" y1="58.42" x2="134.62" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="134.62" y1="63.5" x2="111.76" y2="63.5" width="0.1524" layer="91"/>
 <junction x="111.76" y="63.5"/>
 <wire x1="96.52" y1="63.5" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
+<pinref part="X1" gate="G$1" pin="D-"/>
 <wire x1="101.6" y1="63.5" x2="111.76" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="50.8" x2="116.84" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="101.6" y1="60.96" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
 <junction x="101.6" y="63.5"/>
-<wire x1="111.76" y1="63.5" x2="111.76" y2="60.96" width="0.1524" layer="91"/>
-<pinref part="FB1" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$4" class="0">
@@ -1140,14 +1052,6 @@ Source: http://www.murata.com/ Ferrite Bead BLM15H.pdf</description>
 <wire x1="86.36" y1="63.5" x2="50.8" y2="63.5" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$8" class="0">
-<segment>
-<pinref part="X1" gate="G$1" pin="D-"/>
-<wire x1="111.76" y1="50.8" x2="116.84" y2="50.8" width="0.1524" layer="91"/>
-<pinref part="FB1" gate="G$1" pin="1"/>
-<junction x="111.76" y="50.8"/>
-</segment>
-</net>
 </nets>
 </sheet>
 </sheets>
@@ -1163,11 +1067,6 @@ with this version.
 Since Version 8.3, EAGLE supports URNs for individual library
 assets (packages, symbols, and devices). The URNs of those assets
 will not be understood (or retained) with this version.
-</note>
-<note version="8.3" severity="warning">
-Since Version 8.3, EAGLE supports the association of 3D packages
-with devices in libraries, schematics, and board files. Those 3D
-packages will not be understood (or retained) with this version.
 </note>
 <note version="8.4" severity="warning">
 Since Version 8.4, EAGLE supports properties for SPICE simulation. 
